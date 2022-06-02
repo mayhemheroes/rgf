@@ -1,0 +1,6 @@
+project: rgf
+target: rgf
+
+cmds:
+  - cmd: /repo/RGF/bin/rgf predict model_fn=/repo/FastRGF/examples/binary_classification/inputs/madelon.test,test_x_fn=/test.txt,prediction_fn=out
+    filepath: /test.txt
