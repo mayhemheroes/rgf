@@ -1,0 +1,5 @@
+project: rgf
+target: parse
+
+cmds:
+  - cmd: /fuzz_parse

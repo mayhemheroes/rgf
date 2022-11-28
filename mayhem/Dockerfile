@@ -2,17 +2,19 @@ FROM --platform=linux/amd64 ubuntu:22.04 as builder
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential cmake perl
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y clang
 
 COPY . /repo
 WORKDIR /repo/RGF/build
 RUN cmake ..
 RUN make -j8
 
-RUN mkdir -p /deps
-RUN ldd /repo/RGF/bin/rgf | tr -s '[:blank:]' '\n' | grep '^/' | xargs -I % sh -c 'cp % /deps;'
+WORKDIR /repo/FastRGF/src/base/build
+RUN cmake .. -DCMAKE_CXX_FLAGS="-I/repo/FastRGF/include"
+RUN make -j8
+RUN clang++ /repo/mayhem/fuzz_parse.cpp -fsanitize=fuzzer,address -I /repo/FastRGF/include/ -L /repo/FastRGF/src/base/build/ -lbase -o /fuzz
 
 FROM ubuntu:22.04 as package
 
-COPY --from=builder /deps /deps
 COPY --from=builder /repo /repo
-ENV LD_LIBRARY_PATH=/deps
+COPY --from=builder /fuzz /fuzz_parse
